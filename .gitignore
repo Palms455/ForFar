@@ -5,7 +5,8 @@ __pycache__/
 
 # C extensions
 *.so
-
+forfar_env/
+backend/forfar/settings_local.py
 # Distribution / packaging
 .Python
 build/
