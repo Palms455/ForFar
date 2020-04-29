@@ -3,11 +3,31 @@ from django.contrib.postgres.fields import JSONField
 
 # Create your models here.
 
-class Printer(models.Model):
+class ChoiceParams(models.Model):
+
+	client = 'client'
+	kitchen = 'kitchen'
+	check_types = [
+		(client, 'client'),
+		(kitchen, 'kitchen')
+		]
+	new = 'new'
+	rendered = 'rendered'
+	printed = 'printed'
+	status = [
+    	(new, 'new'),
+        (rendered, 'rendered'),
+        (printed, 'printed')
+        ]
+
+	class Meta:
+		abstract = True
+
+class Printer(ChoiceParams):
 
     name = models.CharField(max_length=250, verbose_name='Название принтера')
     api_key = models.CharField(max_length=250, unique=True, blank=False, null=False, verbose_name='Ключ доступа к API')
-    check_type = models.CharField(max_length=7, choices=, verbose_name='Тип чека')
+    check_type = models.CharField(max_length=7, choices=ChoiceParams.check_types, verbose_name='Тип чека')
     point_id = models.IntegerField(verbose_name='Точка привязки принтера')
 
     def __str__(self):
@@ -18,19 +38,12 @@ class Printer(models.Model):
     	verbose_name_plural = 'Принтеры'
 
 
-class Check(models.Model):
-
-    new = 'new'
-    rendered = 'rendered'
-    printed = 'printed'
-    status = [(new, 'new'),
-                (rendered, 'rendered'),
-                (printed, 'printed')]
+class Check(ChoiceParams):
 
     printer = models.ForeignKey(Printer, on_delete=models.CASCADE, verbose_name='Принтер')
-    check_type = models.CharField(max_length=7, choices= verbose_name='Тип чека')
+    check_type = models.CharField(max_length=7, choices=ChoiceParams.check_types, verbose_name='Тип чека')
     order = JSONField(verbose_name='Информация о заказе')
-    status = models.CharField(max_length=8, choices=status, default=NEW, verbose_name='Статус чека')
+    status = models.CharField(max_length=8, choices=ChoiceParams.status, default=ChoiceParams.new, verbose_name='Статус чека')
     pdf_file = models.FileField(upload_to='pdf/', null=True, blank=True, verbose_name='PDF-файл')
 
     def __str__(self):
