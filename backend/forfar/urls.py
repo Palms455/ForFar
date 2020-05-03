@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from forfar.yasg import urlpatterns as doc_urls
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/checks/', include('checks.urls', namespace='checks'))
 ]
+
+urlpatterns += doc_urls
