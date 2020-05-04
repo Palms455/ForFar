@@ -47,7 +47,7 @@ class Check(ChoiceParams):
     pdf_file = models.FileField(upload_to='pdf/', null=True, blank=True, verbose_name='PDF-файл')
 
     def __str__(self):
-        return f'{self.order["id"]}_{self.type}'
+        return f'{self.order["id"]}_{self.check_type}'
 
     class Meta:
     	verbose_name = 'Чек'

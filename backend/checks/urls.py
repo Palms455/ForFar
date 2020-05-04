@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from forfar.views import GetOrder, NewCheck, PdfCheck
+from checks.views import GetOrder, NewCheck, PdfCheck
 
 urlpatterns = [
     url(r'^create_checks/$', GetOrder.as_view(), name='create_checks'),
