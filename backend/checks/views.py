@@ -1,16 +1,20 @@
 from rest_framework.views import APIView
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from checks.models import Printer, Check
-#from checks.models import CheckSerializer
+from checks.serializers import CheckSerializer
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 import json
+import django_rq
+from checks.tasks import generate_pdf
+
 
 
 # Create your views here.
 
 class GetOrder(APIView):
-	permission_classes = (AllowAny,)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
+	
 
 	def post(self, request):
 		order = json.loads(request.body.decode())
@@ -21,26 +25,36 @@ class GetOrder(APIView):
 			return JsonResponse({'error': "Для данного заказа уже созданы чеки"}, status=400)
 		for printer in all_printers:
 			new_check = Check.objects.create(printer_id=printer.id, check_type=printer.check_type, order=order)
+			django_rq.enqueue(generate_pdf, check.id)
 		return JsonResponse({'ok' : "Чеки успешно созданы"}, status=201)
 
 
 class NewCheck(APIView):
-	permission_classes = (AllowAny,)
+	permission_classes = (IsAuthenticatedOrReadOnly,)
 
 	def get(self, request, api_key):
 		printer = Printer.objects.get(api_key=api_key)
 		if not printer:
 			return JsonResponse({'error': "Не существует принтера с таким api_key"}, status=401)
-		checks = printer.checks_set.filter(status=Check.NEW).order_by('id')
-		#list_check = CheckSerializer(checks, many=True).data
-		return JsonResponse({'checks' : 'list_check'})
+		checks = printer.checks_set.filter(status=Check.rendered).order_by('id')
+		list_check = CheckSerializer(checks, many=True).data
+		return JsonResponse({'checks' : list_check})
 
 class PdfCheck(APIView):
 	permission_classes = (AllowAny,)
-
 	def get(self, request, api_key, check_id):
 		if not Printer.objects.filter(api_key=api_key).exists():
 			return JsonResponse({'error': "Не существует принтера с таким api_key"}, status=401)
+		check = Check.object.filter(check_id=check_id).first()
+		if not check:
+			return JsonResponse({'error': "Данного чека не существует"}, status=400)
+		if not check.pdf_file:
+			return JsonResponse({'error': "Для данного чека не сгенерирован PDF-файл"}, status=400)
+		check.status = Check.printed
+		check.save()
+		return FileResponse(open(check.pdf_file.path, 'rb'))
+
+
 
 
 	

@@ -19,7 +19,8 @@ from forfar.yasg import urlpatterns as doc_urls
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/checks/', include('checks.urls', namespace='checks'))
+    url(r'^api/checks/', include('checks.urls', namespace='checks')),
+    url(r'^django-rq/', include('django_rq.urls'))
 ]
 
 urlpatterns += doc_urls

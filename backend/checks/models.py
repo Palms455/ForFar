@@ -40,7 +40,7 @@ class Printer(ChoiceParams):
 
 class Check(ChoiceParams):
 
-    printer = models.ForeignKey(Printer, on_delete=models.CASCADE, verbose_name='Принтер')
+    printer = models.ForeignKey(Printer, on_delete=models.CASCADE, verbose_name='Принтер', related_name='checks_set')
     check_type = models.CharField(max_length=7, choices=ChoiceParams.check_types, verbose_name='Тип чека')
     order = JSONField(verbose_name='Информация о заказе')
     status = models.CharField(max_length=8, choices=ChoiceParams.status, default=ChoiceParams.new, verbose_name='Статус чека')
